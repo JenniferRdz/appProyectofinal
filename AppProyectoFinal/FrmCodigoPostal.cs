@@ -14,48 +14,21 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using Paragraph = DocumentFormat.OpenXml.Wordprocessing.Paragraph;
 using Run = DocumentFormat.OpenXml.Wordprocessing.Run;
 using Text = DocumentFormat.OpenXml.Wordprocessing.Text;
-using Break = DocumentFormat.OpenXml.Wordprocessing.Break;
 using Document = iTextSharp.text.Document;
 using Table = DocumentFormat.OpenXml.Wordprocessing.Table;
+using System.Collections.Generic;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace AppProyectoFinal
 {
     public partial class FrmCodigoPostal : Form
     {
+        bool maximizado;
         public FrmCodigoPostal()
         {
             InitializeComponent();
             lstvDatos.View = System.Windows.Forms.View.Details;
-        }
-
-        private void btnAbrir_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog dialogo = new OpenFileDialog();
-            if (dialogo.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
-            lstvDatos.Clear();
-            string rutaArchivo = dialogo.FileName;
-            StreamReader sr = new StreamReader(rutaArchivo, Encoding.GetEncoding(1252));
-            string columnas = sr.ReadLine();
-            string[] columna = columnas.Split('|');
-            for (int i = 0; i < columna.Length; i++)
-            {
-                lstvDatos.Columns.Add(columna[i]);
-            }
-            string renglon;
-            while ((renglon = sr.ReadLine()) != null)
-            {
-                string[] datos = renglon.Split('|');
-                ListViewItem item = new ListViewItem(datos[0]);
-                for (int i = 1; i < datos.Length; i++)
-                {
-                    item.SubItems.Add(datos[i]);
-                }
-                lstvDatos.Items.Add(item);
-            }
-            sr.Close();
+            maximizado = false;
         }
 
         private void btnGuardarConInterop_Click(object sender, EventArgs e)
@@ -339,5 +312,118 @@ namespace AppProyectoFinal
                 return ',';
             }
         }
+
+
+        private void chartGrafica_Click(object sender, EventArgs e)
+        {
+            if (maximizado)
+            {
+                chartGrafica.Location = new System.Drawing.Point(436, 12);
+                chartGrafica.Height = 240; chartGrafica.Width = 320;
+                treeView1.Visible = true;
+                btnCargar.Visible = true;
+            }
+            else
+            {
+                chartGrafica.Location = new System.Drawing.Point(0, 0);
+                chartGrafica.Height = this.Height; chartGrafica.Width = this.Width;
+                treeView1.Visible = false;
+                btnCargar.Visible = false;
+            }
+            maximizado = !maximizado;
+        }
+
+        private void btnCargar_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialogo = new OpenFileDialog();
+            if (dialogo.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            lstvDatos.Clear();
+            string rutaArchivo = dialogo.FileName;
+            StreamReader sr = new StreamReader(rutaArchivo, Encoding.GetEncoding(1252));
+            string columnas = sr.ReadLine();
+            string[] columna = columnas.Split('|');
+            for (int i = 0; i < columna.Length; i++)
+            {
+                lstvDatos.Columns.Add(columna[i]);
+            }
+
+            string renglon;
+            Dictionary<string, int> contadorCodigosPostales = new Dictionary<string, int>();
+            Dictionary<string, Dictionary<string, List<string>>> datosCodigosPostales = new Dictionary<string, Dictionary<string, List<string>>>();
+
+            while ((renglon = sr.ReadLine()) != null)
+            {
+                string[] datos = renglon.Split('|');
+                ListViewItem item = new ListViewItem(datos[0]);
+                for (int i = 1; i < datos.Length; i++)
+                {
+                    item.SubItems.Add(datos[i]);
+                }
+                lstvDatos.Items.Add(item);
+
+                string codigoPostal = datos[0];
+                string colonia = datos[1];
+                string ciudad = datos[5];
+
+                // Agregar el código postal al TreeView si no está presente
+                if (!datosCodigosPostales.ContainsKey(codigoPostal))
+                {
+                    datosCodigosPostales.Add(codigoPostal, new Dictionary<string, List<string>>());
+                }
+
+                // Agregar la colonia a la lista de colonias del código postal si no está presente
+                if (!datosCodigosPostales[codigoPostal].ContainsKey(colonia))
+                {
+                    datosCodigosPostales[codigoPostal].Add(colonia, new List<string>());
+                }
+
+                // Agregar la ciudad a la lista de ciudades del código postal si no está presente
+                if (!datosCodigosPostales[codigoPostal][colonia].Contains(ciudad))
+                {
+                    datosCodigosPostales[codigoPostal][colonia].Add(ciudad);
+                }
+
+                // Contar el número de apariciones de cada código postal
+                if (contadorCodigosPostales.ContainsKey(codigoPostal))
+                {
+                    contadorCodigosPostales[codigoPostal]++;
+                }
+                else
+                {
+                    contadorCodigosPostales[codigoPostal] = 1;
+                }
+            }
+
+            sr.Close();
+
+            // Limpiar el TreeView
+            treeView1.Nodes.Clear();
+
+            // Agregar los códigos postales, colonias y ciudades al TreeView
+            foreach (var codigoPostal in datosCodigosPostales)
+            {
+                TreeNode nodoCodigoPostal = treeView1.Nodes.Add(codigoPostal.Key);
+
+                foreach (var colonia in codigoPostal.Value)
+                {
+                    TreeNode nodoColonia = nodoCodigoPostal.Nodes.Add(colonia.Key);
+
+                    foreach (var ciudad in colonia.Value)
+                    {
+                        nodoColonia.Nodes.Add(ciudad);
+                    }
+                }
+            }
+            chartGrafica.Series[0].Points.Clear();
+            foreach (var codigoPostal in contadorCodigosPostales)
+            {
+                chartGrafica.Series[0].Points.AddXY(codigoPostal.Key, codigoPostal.Value);
+            }
+        }
+       
     }
 }

@@ -22,20 +22,8 @@ namespace AppProyectoFinal
             FrmCodigoPostal frm = new FrmCodigoPostal();
             frm.ShowDialog();
         }
-
-        private void btnGraficar_Click(object sender, EventArgs e)
-        {
-            FrmGraficar frm = new FrmGraficar();
-            frm.ShowDialog();
-        }
-
+       
         private void btnclienteRest_Click(object sender, EventArgs e)
-        {
-            FrmPrecio_del_dolar frm = new FrmPrecio_del_dolar();
-            frm.ShowDialog();
-        }
-
-        private void btnRango_Click(object sender, EventArgs e)
         {
             FrmRango frm = new FrmRango();
             frm.ShowDialog();

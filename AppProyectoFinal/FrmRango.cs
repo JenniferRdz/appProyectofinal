@@ -9,37 +9,65 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.Runtime.Serialization.Json;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace AppProyectoFinal
 {
     public partial class FrmRango : Form
     {
+        bool maximizado;
         public FrmRango()
         {
             InitializeComponent();
+            maximizado = false;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnConsultar_Click(object sender, EventArgs e)
         {
             string fechaDesde = dtpDesde.Value.ToString("yyyy-MM-dd");
             string fechaHasta = dtpHasta.Value.ToString("yyyy-MM-dd");
             Response response = read(fechaDesde, fechaHasta);
-            ConsultarDatos(response);
+            if (response != null)
+            {
+                ConsultarDatos(response);
+                GraficarDatos(response);
+            }
         }
 
         private void ConsultarDatos(Response response)
         {
             Serie serie = response.seriesResponse.Series[0];
-            lbSerie.Text = "Serie: " + serie.Title;
+            treeView1.Nodes.Clear();
+
+            TreeNode rootNode = new TreeNode(serie.Title);
+            treeView1.Nodes.Add(rootNode);
 
             foreach (DataSerie dataSerie in serie.Data)
             {
                 if (dataSerie.Data.Equals("N/E")) continue;
-                lbFecha.Text = "Fecha: " + dataSerie.Fecha;
-                lbPrecio.Text = "Precio: " + dataSerie.Data;
+
+                TreeNode node = new TreeNode();
+                node.Text = "Fecha: " + dataSerie.Fecha + " - Precio: " + dataSerie.Data;
+                rootNode.Nodes.Add(node);
             }
 
-            Console.ReadLine();
+            treeView1.ExpandAll();
+        }
+
+        private void GraficarDatos(Response response)
+        {
+            chart1.Series.Clear();
+            Serie serie = response.seriesResponse.Series[0];
+            Series series = chart1.Series.Add(serie.Title);
+            series.ChartType = SeriesChartType.Line;
+
+            foreach (DataSerie dataSerie in serie.Data)
+            {
+                if (dataSerie.Data.Equals("N/E")) continue;
+                double precio = Convert.ToDouble(dataSerie.Data);
+                DateTime fecha = DateTime.Parse(dataSerie.Fecha);
+                series.Points.AddXY(fecha, precio);
+            }
         }
         private static Response read(string fechaDesde, string fechaHasta)
         {
@@ -65,6 +93,27 @@ namespace AppProyectoFinal
             }
 
             return null;
+        }
+
+        private void chart1_Click(object sender, EventArgs e)
+        {
+            if (maximizado)
+            {
+                chart1.Location = new System.Drawing.Point(436, 12);
+                chart1.Height = 240; chart1.Width = 320;
+                treeView1.Visible = true;
+                lbInicio.Visible = true;
+                lbFinal.Visible = true;
+            }
+            else
+            {
+                chart1.Location = new System.Drawing.Point(0, 0);
+                chart1.Height = this.Height; chart1.Width = this.Width; 
+                treeView1.Visible = false;
+                lbInicio.Visible = false;
+                lbFinal.Visible = false;
+            }
+            maximizado = !maximizado;
         }
     }
 }

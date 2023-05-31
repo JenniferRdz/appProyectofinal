@@ -71,18 +71,6 @@
     <Compile Include="FrmCodigoPostal.Designer.cs">
       <DependentUpon>FrmCodigoPostal.cs</DependentUpon>
     </Compile>
-    <Compile Include="FrmGraficar.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FrmGraficar.Designer.cs">
-      <DependentUpon>FrmGraficar.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FrmPrecio del dolar.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FrmPrecio del dolar.Designer.cs">
-      <DependentUpon>FrmPrecio del dolar.cs</DependentUpon>
-    </Compile>
     <Compile Include="FrmRango.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -97,12 +85,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmCodigoPostal.resx">
       <DependentUpon>FrmCodigoPostal.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FrmGraficar.resx">
-      <DependentUpon>FrmGraficar.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FrmPrecio del dolar.resx">
-      <DependentUpon>FrmPrecio del dolar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmRango.resx">
       <DependentUpon>FrmRango.cs</DependentUpon>
